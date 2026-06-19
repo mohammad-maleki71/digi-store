@@ -131,6 +131,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+#MEDIA FILES
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
