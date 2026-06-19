@@ -1,0 +1,66 @@
+from django.db import models
+
+
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin
+)
+
+from .managers import UserManager
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+
+    phone = models.CharField(
+        max_length=11,
+        unique=True
+    )
+
+    email = models.EmailField(
+        unique=True,
+    )
+
+    first_name = models.CharField(
+        max_length=100
+    )
+
+    last_name = models.CharField(
+        max_length=100
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    is_admin = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    objects = UserManager()
+
+    USERNAME_FIELD = "phone"
+
+    REQUIRED_FIELDS = [
+        "email",
+        "first_name",
+        "last_name"
+    ]
+
+    @property
+    def is_staff(self):
+        return self.is_admin
+
+    def __str__(self):
+        return self.phone
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
