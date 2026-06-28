@@ -10,6 +10,8 @@ from .forms import (
 
 class ProfileInline(admin.StackedInline):
     model = Profile
+    extra = 0
+    max_num = 1
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -32,14 +34,16 @@ class CustomUserAdmin(UserAdmin):
         "phone",
     )
 
-
     list_display = (
         "phone",
         "email",
         "first_name",
         "last_name",
-        "is_admin",
         "is_active",
+        "is_staff",
+        "phone_verified",
+        "email_verified",
+        "is_admin",
     )
 
 
@@ -48,11 +52,13 @@ class CustomUserAdmin(UserAdmin):
         "email",
     )
 
-
     list_filter = (
-        "is_admin",
+        "is_staff",
         "is_superuser",
         "is_active",
+        "is_admin",
+        "phone_verified",
+        "email_verified",
     )
 
 
@@ -83,15 +89,17 @@ class CustomUserAdmin(UserAdmin):
             {
                 "fields": (
                     "is_active",
+                    "is_staff",
                     "is_admin",
                     "is_superuser",
                     "groups",
                     "user_permissions",
+                    "phone_verified",
+                    "email_verified",
                 )
             }
         ),
     )
-
 
     add_fieldsets = (
         (
@@ -104,6 +112,9 @@ class CustomUserAdmin(UserAdmin):
                     "last_name",
                     "password1",
                     "password2",
+                    "is_staff",
+                    "is_admin",
+                    "is_active",
                 )
             }
         ),

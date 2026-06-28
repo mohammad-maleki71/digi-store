@@ -37,9 +37,10 @@ class UserManager(BaseUserManager):
         password=None,
         **extra_fields
     ):
-        extra_fields.setdefault("is_admin", True)
+        extra_fields.setdefault('is_admin', True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("is_staff", True)
 
         return self.create_user(
             phone=phone,

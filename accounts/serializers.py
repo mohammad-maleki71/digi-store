@@ -1,31 +1,19 @@
 from rest_framework import serializers
-from .models import User
 
 
-class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True,
-    )
-    password_confirm = serializers.CharField(
-        write_only=True,
-    )
-    class Meta:
-        model = User
+class UserRegisterSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=11)
+    email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
 
-        fields = ('phone', 'email', 'first_name', 'last_name', 'password', 'password_confirm')
+    def validate(self, attrs):
 
-    def validate(self, data):
-        password = data['password']
-        password_confirm = data['password_confirm']
-        if password != password_confirm:
-            raise serializers.ValidationError({"password":"Passwords dont match"})
-        return data
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError(
+                {"password": "Passwords do not match."}
+            )
 
-    def create(self, validated_data):
-        validated_data.pop('password_confirm')
-
-        user = User.objects.create_user(**validated_data)
-        return user
-
-
-
+        return attrs

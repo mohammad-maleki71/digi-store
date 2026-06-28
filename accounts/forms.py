@@ -79,8 +79,11 @@ class CustomUserChangeForm(forms.ModelForm):
             "last_name",
             "password",
             "is_active",
+            "is_staff",
             "is_admin",
             "is_superuser",
             "groups",
             "user_permissions",
+            "phone_verified",
+            "email_verified",
         )

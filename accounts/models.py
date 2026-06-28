@@ -1,12 +1,7 @@
 from django.db import models
 from django.conf import settings
-
-
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin
-)
-
+import uuid
+from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin)
 from .managers import UserManager
 
 
@@ -37,6 +32,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False
     )
 
+    is_staff = models.BooleanField(
+        default=False
+    )
+
+    phone_verified = models.BooleanField(
+        default=False,
+    )
+
+    email_verified = models.BooleanField(
+        default=False,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -55,17 +62,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         "last_name"
     ]
 
-    @property
-    def is_staff(self):
-        return self.is_admin
-
     def __str__(self):
         return self.phone
 
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
-
 
 
 class Profile(models.Model):
@@ -104,3 +106,5 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.phone
+
+

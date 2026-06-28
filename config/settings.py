@@ -14,29 +14,22 @@ from pathlib import Path
 from decouple import config
 
 
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+
+# SECURITY WARNING: don't run with debug turned on in production!
+#DEBUG = True
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-)h2vue0f1%8qz@%c^wf9h&)dlno=7d!$u7=90o9-f&l-8&8r@y'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'rest_framework_simplejwt',
     'django_filters',
     'accounts.apps.AccountsConfig',
@@ -128,7 +122,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
 
 
@@ -141,6 +134,75 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS':
+        'drf_spectacular.openapi.AutoSchema',
+    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
 }
 
 AUTH_USER_MODEL = "accounts.User"
+
+# Email Configuration (Development)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@digitalstore.com"
+
+# SMS Configuration (Development)
+SMS_BACKEND = "console"
+SMS_FROM = "Digital Store"
+
+# CELERY CONFIGURATIONS
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+
+# CACHE CONFIGURATIONS
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# redis-py
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379
+REDIS_DB = 2
+REDIS_PASSWORD = None
+
+# SPECTACULAR_SETTING
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Digital Store API",
+    "DESCRIPTION": "API Documentation",
+    "VERSION": "1.0.0",
+}
+
+#BACKEND_URL
+BACKEND_URL = "http://127.0.0.1:8000"
+
+#REGISTRATION_CACHE_TIMEOUT
+REGISTRATION_CACHE_TIMEOUT = 3600
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

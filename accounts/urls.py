@@ -1,7 +1,32 @@
 from django.urls import path
-from . import views
 
-app_name = 'accounts'
+from .views import (
+    UserRegisterAPIView,
+    PhoneVerificationAPIView,
+    EmailVerificationAPIView,
+)
+
+
+app_name = "accounts"
 urlpatterns = [
-    path('register/', views.UserRegisterAPIView.as_view(), name='user_register'),
+
+    path(
+        "register/",
+        UserRegisterAPIView.as_view(),
+        name="register"
+    ),
+
+    path(
+        "verify-phone/",
+        PhoneVerificationAPIView.as_view(),
+        name="verify-phone"
+    ),
+
+    path(
+        "verify-email/",
+        EmailVerificationAPIView.as_view(),
+        name="verify-email"
+    ),
+
 ]
+
