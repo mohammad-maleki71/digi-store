@@ -110,7 +110,7 @@ class UserRegisterAPIView(APIView):
 
         return Response(
             {
-                "message": "OTP sent successfully.",
+                "message": "OTP code and email, sent successfully.",
                 "verify_token": verify_token
             },
             status=status.HTTP_201_CREATED
