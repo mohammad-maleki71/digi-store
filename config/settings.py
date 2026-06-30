@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from decouple import config
 import logging
+from decouple import config, Csv
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +29,10 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    cast=Csv()
+)
 
 # Application definition
 INSTALLED_APPS = [
@@ -142,7 +146,7 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = "accounts.User"
 
-# GOOGLE APP :
+# Email (Gmail SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = config('EMAIL_PORT')
@@ -164,7 +168,7 @@ CELERY_TASK_SERIALIZER = "json"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": config('CACHE_LOCATION'),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
