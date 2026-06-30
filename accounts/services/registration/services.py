@@ -12,6 +12,7 @@ class EmailService:
             message=f"Click the following link:\n\n{verification_link}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
+            fail_silently=False,
         )
 
 
