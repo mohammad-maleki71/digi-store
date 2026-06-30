@@ -1,15 +1,17 @@
+import logging
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 from accounts.models import User
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
+
 class VerificationService:
 
     @staticmethod
     def verify_email(token):
-        print("TOKEN RECEIVED:", token)
         data = cache.get(f"register:{token}")
-        print("DATA FROM REDIS:", data)
         if not data:
             raise ValidationError(
                 {"error": "Invalid or expired token."}

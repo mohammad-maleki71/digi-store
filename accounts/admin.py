@@ -39,11 +39,12 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "first_name",
         "last_name",
-        "is_active",
+        "is_admin",
         "is_staff",
+        "is_superuser",
         "phone_verified",
         "email_verified",
-        "is_admin",
+        "is_active",
     )
 
 

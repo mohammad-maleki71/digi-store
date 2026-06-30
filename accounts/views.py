@@ -1,3 +1,4 @@
+import logging
 from django.core.cache import cache
 import uuid
 from rest_framework.views import APIView
@@ -13,9 +14,13 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiExample,
     OpenApiResponse,
+    OpenApiParameter,
     inline_serializer,
 )
 from rest_framework import serializers
+
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema(
@@ -92,12 +97,16 @@ class UserRegisterAPIView(APIView):
 
     def post(self, request):
 
+        logger.info("User registration started.")
+
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         verify_token = RegistrationService.register(
             serializer.validated_data
         )
+
+        logger.info("User registration completed successfully.")
 
         return Response(
             {
@@ -107,6 +116,37 @@ class UserRegisterAPIView(APIView):
             status=status.HTTP_201_CREATED
         )
 
+
+@extend_schema(
+    summary="Verify email",
+    description="Verify user's email using the verification token.",
+    parameters=[
+        OpenApiParameter(
+            name="token",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="Email verification token.",
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(
+            response={
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Email verified.",
+                    }
+                },
+            },
+            description="Email verified successfully.",
+        ),
+        400: OpenApiResponse(description="Invalid or expired token."),
+    },
+    tags=["Authentication"],
+    auth=[],
+)
 class EmailVerificationAPIView(APIView):
 
     def get(self, request):
@@ -120,7 +160,30 @@ class EmailVerificationAPIView(APIView):
         })
 
 
-
+@extend_schema(
+    summary="Verify phone",
+    description="Verify user's phone number using the verification token and OTP code.",
+    request=inline_serializer(
+        name="PhoneVerificationRequest",
+        fields={
+            "token": serializers.CharField(),
+            "code": serializers.CharField(),
+        },
+    ),
+    responses={
+        200: inline_serializer(
+            name="PhoneVerificationResponse",
+            fields={
+                "message": serializers.CharField(
+                    default="Phone verified."
+                ),
+            },
+        ),
+        400: OpenApiResponse(description="Invalid or expired token/code."),
+    },
+    tags=["Authentication"],
+    auth=[],
+)
 class PhoneVerificationAPIView(APIView):
 
     def post(self, request):

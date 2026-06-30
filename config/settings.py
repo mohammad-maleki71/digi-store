@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import logging
 
 
 # Quick-start development settings - unsuitable for production
@@ -185,9 +186,35 @@ BACKEND_URL = "http://127.0.0.1:8000"
 #REGISTRATION_CACHE_TIMEOUT
 REGISTRATION_CACHE_TIMEOUT = 3600
 
+#LOGGING
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
 
+    "formatters": {
+        "standard": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
 
+    "handlers": {
+    "console": {
+        "class": "logging.StreamHandler",
+        "formatter": "standard",
+    },
+    "file": {
+        "class": "logging.FileHandler",
+        "filename": BASE_DIR / "logs" / "project.log",
+        "formatter": "standard",
+    },
+},
 
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "INFO",
+    },
+}
 
 
 
