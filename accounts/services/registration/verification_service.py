@@ -11,7 +11,9 @@ class VerificationService:
 
     @staticmethod
     def verify_email(token):
+
         data = cache.get(f"register:{token}")
+
         if not data:
             raise ValidationError(
                 {"error": "Invalid or expired token."}
@@ -67,7 +69,7 @@ class VerificationService:
         ):
             return
 
-        User.objects.create(
+        user = User.objects.create(
             phone=data["phone"],
             email=data["email"],
             first_name=data["first_name"],
@@ -76,6 +78,11 @@ class VerificationService:
             phone_verified=True,
             email_verified=True,
             is_active=True,
+        )
+
+        logger.info(
+            "User %s registered successfully.",
+            user.id
         )
 
         cache.delete(

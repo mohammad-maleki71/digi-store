@@ -14,13 +14,7 @@ class RegistrationService:
 
     @staticmethod
     def register(validated_data):
-        try:
             data = validated_data.copy()
-
-            logger.info(
-                "User registration started for email=%s",
-                data["email"],
-            )
 
             data.pop("password_confirm")
 
@@ -48,23 +42,10 @@ class RegistrationService:
                 data["phone"],
                 data["otp"]
             )
-            logger.info(
-                "SMS verification task queued."
-            )
 
             send_email_task.delay(
                 data["email"],
                 verification_link
             )
-            logger.info(
-                f"Email verification task queued. Link: {verification_link}"
-            )
-
-            logger.info(
-                "User registration completed successfully."
-            )
 
             return verify_token
-        except Exception:
-            logger.exception("User registration failed.")
-            raise

@@ -5,9 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.tasks import send_sms_task, send_email_task
-from accounts.serializers import UserRegisterSerializer
-from accounts.services.registration.registration import RegistrationService
-from .services.registration.verification import VerificationService
+from accounts.serializers import UserRegisterSerializer, ProfileSerializer, LoginSerializer, LogoutSerializer
+from accounts.services.registration.registration_service import RegistrationService
+from .services.registration.verification_service import VerificationService
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import OpenApiExample
 from drf_spectacular.utils import (
@@ -18,6 +18,10 @@ from drf_spectacular.utils import (
     inline_serializer,
 )
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
+from .models import Profile
 
 
 logger = logging.getLogger(__name__)
@@ -97,16 +101,12 @@ class UserRegisterAPIView(APIView):
 
     def post(self, request):
 
-        logger.info("User registration started.")
-
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         verify_token = RegistrationService.register(
             serializer.validated_data
         )
-
-        logger.info("User registration completed successfully.")
 
         return Response(
             {
@@ -155,6 +155,11 @@ class EmailVerificationAPIView(APIView):
 
         VerificationService.verify_email(token)
 
+        logger.info(
+            "User %s verified email successfully.",
+            user.id
+        )
+
         return Response({
             "message": "Email verified."
         })
@@ -196,6 +201,127 @@ class PhoneVerificationAPIView(APIView):
             code
         )
 
+        logger.info(
+            "User %s verified phone successfully.",
+            request.user.id
+        )
+
         return Response({
             "message": "Phone verified."
         })
+
+
+@extend_schema(
+    tags=["Authentication"],
+    summary="User login",
+    description="Authenticate the user and return JWT tokens.",
+    request=LoginSerializer,
+    responses={
+        200: inline_serializer(
+            name="LoginResponse",
+            fields={
+                "refresh": serializers.CharField(),
+                "access": serializers.CharField(),
+            },
+        ),
+        400: OpenApiResponse(description="Invalid credentials."),
+    },
+)
+class LoginAPIView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+
+        logger.info(
+            "User %s logged in successfully.",
+            user.id
+        )
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(access),
+            }
+        )
+
+
+@extend_schema(
+    tags=["Authentication"],
+    summary="User logout",
+    description="Invalidate the refresh token.",
+    request=LogoutSerializer,
+    responses={
+        205: inline_serializer(
+            name="LogoutResponse",
+            fields={
+                "message": serializers.CharField(),
+            },
+        ),
+        400: OpenApiResponse(description="Invalid refresh token."),
+        401: OpenApiResponse(description="Authentication required."),
+    },
+)
+class LogoutAPIView(APIView):
+
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        logger.info(
+            "User %s logged out. IP: %s",
+            request.user.id,
+            request.META.get("REMOTE_ADDR")
+        )
+
+        return Response(
+            {"message": "Logout successful."},
+            status=status.HTTP_205_RESET_CONTENT
+        )
+
+
+@extend_schema(
+    tags=["Profile"],
+    summary="Retrieve profile",
+    responses={200: ProfileSerializer},
+)
+@extend_schema(
+    methods=["PUT"],
+    tags=["Profile"],
+    summary="Update profile",
+    request=ProfileSerializer,
+    responses={200: ProfileSerializer},
+)
+@extend_schema(
+    methods=["PATCH"],
+    tags=["Profile"],
+    summary="Partially update profile",
+    request=ProfileSerializer,
+    responses={200: ProfileSerializer},
+)
+class ProfileAPIView(RetrieveUpdateAPIView):
+
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def perform_update(self, serializer):
+        profile = serializer.save()
+
+        logger.info(
+            "Profile %s updated by user %s",
+            profile.id,
+            self.request.user.id
+        )
+
+
+
+
+
