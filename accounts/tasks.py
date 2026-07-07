@@ -1,7 +1,7 @@
 import logging
 from celery import shared_task
-from accounts.services.registration.send_services import SMSService
-from accounts.services.registration.send_services import EmailService
+from accounts.services.view_services.send_email_phone import SMSService
+from accounts.services.view_services.send_email_phone import EmailService
 from django.conf import settings
 
 logger = logging.getLogger(__name__)

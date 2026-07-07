@@ -5,6 +5,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from .models import Profile, User
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 
