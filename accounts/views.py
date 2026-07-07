@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from accounts.tasks import send_sms_task, send_email_task
 from accounts.serializers import UserRegisterSerializer, ProfileSerializer, LoginSerializer, LogoutSerializer
-from accounts.services.registration.registration_service import RegistrationService
-from .services.registration.verification_service import VerificationService
+from accounts.services.view_services.registration_service import RegistrationService
+from accounts.services.view_services.verify_email_phone import VerificationService
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import OpenApiExample
 from drf_spectacular.utils import (
@@ -156,8 +156,7 @@ class EmailVerificationAPIView(APIView):
         VerificationService.verify_email(token)
 
         logger.info(
-            "User %s verified email successfully.",
-            user.id
+            "email verified email successfully.",
         )
 
         return Response({
@@ -202,8 +201,7 @@ class PhoneVerificationAPIView(APIView):
         )
 
         logger.info(
-            "User %s verified phone successfully.",
-            request.user.id
+            "phone verified phone successfully.",
         )
 
         return Response({
@@ -260,11 +258,27 @@ class LoginAPIView(APIView):
                 "message": serializers.CharField(),
             },
         ),
-        400: OpenApiResponse(description="Invalid refresh token."),
-        401: OpenApiResponse(description="Authentication required."),
+        400: inline_serializer(
+            name="BadRequestResponse",
+            fields={
+                "success": serializers.BooleanField(),
+                "status_code": serializers.IntegerField(),
+                "errors": serializers.DictField(),
+            },
+        ),
+        401: inline_serializer(
+            name="UnauthorizedResponse",
+            fields={
+                "success": serializers.BooleanField(),
+                "status_code": serializers.IntegerField(),
+                "errors": serializers.DictField(),
+            },
+        ),
     },
 )
 class LogoutAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
