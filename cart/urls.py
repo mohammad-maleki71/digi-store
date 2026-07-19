@@ -3,10 +3,10 @@ from .views import (
     CartAPIView,
     AddToCartAPIView,
     UpdateCartItemAPIView,
-    DeleteCartItemAPIView,
+    RemoveCartItemAPIView,
 )
 
-
+app_name = "cart"
 urlpatterns = [
 
     path(

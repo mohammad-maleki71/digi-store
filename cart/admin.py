@@ -26,7 +26,6 @@ class CartItemAdmin(admin.ModelAdmin):
         "cart",
         "product",
         "quantity",
-        "created_at",
     )
 
     search_fields = (
