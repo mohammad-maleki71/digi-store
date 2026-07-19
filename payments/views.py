@@ -1,9 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+
+from orders.models import Order
+
+from .models import Payment
+from .serializers import CreatePaymentSerializer
 from .services import PaymentService
-from .serializers import PaymentSerializer
+
 
 
 class CreatePaymentAPIView(APIView):
@@ -15,25 +19,35 @@ class CreatePaymentAPIView(APIView):
 
     def post(self, request):
 
-        order_id = request.data.get(
-            "order_id"
+        serializer = CreatePaymentSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+
+        order_id = serializer.validated_data["order_id"]
+
+
+        order = Order.objects.get(
+            id=order_id,
+            user=request.user
         )
 
 
         payment = PaymentService.create_payment(
-            request.user,
-            order_id
-        )
-
-
-        serializer = PaymentSerializer(
-            payment
+            order
         )
 
 
         return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
+            {
+                "payment_id": payment.id,
+                "amount": payment.amount,
+                "status": payment.status,
+            }
         )
 
 
@@ -44,24 +58,32 @@ class VerifyPaymentAPIView(APIView):
     ]
 
 
-    def post(self, request):
+    def get(self, request):
 
-        payment_id = request.data.get(
+        payment_id = request.query_params.get(
             "payment_id"
         )
 
 
-        payment = PaymentService.verify_payment(
-            payment_id,
-            request.user
+        transaction_id = request.query_params.get(
+            "transaction_id"
         )
 
 
-        serializer = PaymentSerializer(
-            payment
+        payment = Payment.objects.get(
+            id=payment_id,
+            order__user=request.user
+        )
+
+
+        PaymentService.verify_payment(
+            payment,
+            transaction_id
         )
 
 
         return Response(
-            serializer.data
+            {
+                "message": "Payment successful"
+            }
         )

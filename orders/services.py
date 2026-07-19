@@ -1,7 +1,10 @@
 from django.db import transaction
 
 from .models import Order, OrderItem
-from cart.models import Cart
+
+from inventory.services import InventoryService
+from coupons.services import CouponService
+
 
 
 class OrderService:
@@ -9,54 +12,91 @@ class OrderService:
 
     @staticmethod
     @transaction.atomic
-    def create_order(user):
-
-        cart = Cart.objects.get(
-            user=user
-        )
-
-
-        cart_items = cart.items.all()
-
-
-        if not cart_items.exists():
-            raise ValueError(
-                "سبد خرید خالی است"
-            )
+    def create_order(
+        user,
+        cart,
+        coupon_code=None
+    ):
 
 
         total_price = 0
 
 
-        order = Order.objects.create(
-            user=user
-        )
+        # محاسبه مبلغ سبد
+        for item in cart.items.all():
 
-
-        for item in cart_items:
-
-
-            price = item.product.price
-
-
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                price=price
+            total_price += (
+                item.product.price *
+                item.quantity
             )
 
 
-            total_price += price * item.quantity
+        discount = 0
+        coupon = None
+
+
+        # اعمال کوپن
+        if coupon_code:
+
+            result = CouponService.apply_coupon(
+                coupon_code,
+                total_price
+            )
+
+
+            coupon = result["coupon"]
+
+            discount = result["discount"]
+
+            total_price = result["final_price"]
 
 
 
-        order.total_price = total_price
+        # ساخت سفارش
+        order = Order.objects.create(
 
-        order.save()
+            user=user,
+
+            total_price=total_price,
+
+            discount=discount,
+
+            coupon=coupon,
+
+            status="pending"
+
+        )
 
 
-        cart_items.delete()
+
+        # ساخت آیتم ها و کم کردن موجودی
+        for item in cart.items.all():
+
+
+            InventoryService.decrease_stock(
+
+                item.product,
+
+                item.quantity
+
+            )
+
+
+            OrderItem.objects.create(
+
+                order=order,
+
+                product=item.product,
+
+                quantity=item.quantity,
+
+                price=item.product.price
+
+            )
+
+
+
+        cart.items.all().delete()
 
 
         return order

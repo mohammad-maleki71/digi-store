@@ -1,6 +1,8 @@
 from django.db import transaction
-from orders.models import Order
+
 from .models import Payment
+
+from orders.models import Order
 
 
 class PaymentService:
@@ -8,36 +10,73 @@ class PaymentService:
 
     @staticmethod
     @transaction.atomic
-    def verify_payment(payment_id, user):
+    def create_payment(order):
 
-        payment = Payment.objects.select_for_update().get(
-            id=payment_id,
-            order__user=user
+        payment = Payment.objects.create(
+
+            order=order,
+
+            amount=order.total_price,
+
+            status="pending"
+
         )
 
-        gateway_result = True
 
-        if gateway_result:
-
-            payment.status = "success"
-
-            payment.transaction_id = "TEST123456"
-
-            payment.save()
-
-
-            order = payment.order
-
-            order.status = "paid"
-
-            order.save()
+        # اینجا بعداً اتصال به درگاه قرار می‌گیرد
+        # مثلا:
+        #
+        # authority = gateway.request(
+        #     amount=payment.amount
+        # )
+        #
+        # payment.authority = authority
 
 
-        else:
+        payment.save()
 
-            payment.status = "failed"
 
-            payment.save()
+        return payment
+
+
+
+    @staticmethod
+    @transaction.atomic
+    def verify_payment(
+        payment,
+        transaction_id
+    ):
+
+
+        # اینجا بعداً پاسخ واقعی درگاه بررسی می‌شود
+
+
+        payment.status = "success"
+
+        payment.transaction_id = transaction_id
+
+        payment.save()
+
+
+
+        order = payment.order
+
+
+        order.status = "paid"
+
+        order.save()
+
+
+
+        # افزایش تعداد استفاده از کوپن
+        if order.coupon:
+
+            coupon = order.coupon
+
+            coupon.used_count += 1
+
+            coupon.save()
+
 
 
         return payment
