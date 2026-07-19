@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from coupons.models import Coupon
 
 
 class Order(models.Model):
@@ -43,6 +44,20 @@ class Order(models.Model):
 
     updated_at = models.DateTimeField(
         auto_now=True
+    )
+
+    coupon = models.ForeignKey(
+        Coupon,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders"
+    )
+
+    discount = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        default=0
     )
 
 

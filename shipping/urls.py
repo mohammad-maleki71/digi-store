@@ -4,7 +4,7 @@ from .views import (
     ShipmentDetailAPIView,
 )
 
-
+app_name = "shipping"
 urlpatterns = [
 
     path(
