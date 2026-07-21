@@ -113,7 +113,7 @@ class UpdateCartItemAPIView(APIView):
         except CartItem.DoesNotExist:
             return Response(
                 {
-                    "error": "آیتم پیدا نشد"
+                    "error": "Item Not Found",
                 },
                 status=status.HTTP_404_NOT_FOUND
             )

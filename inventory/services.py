@@ -1,10 +1,8 @@
 from django.db import transaction
-
 from .models import Inventory
 
 
 class InventoryService:
-
 
     @staticmethod
     @transaction.atomic
@@ -14,22 +12,17 @@ class InventoryService:
             product=product
         )
 
-
         if inventory.quantity < quantity:
             raise ValueError(
                 "Not enough stock"
             )
 
-
         inventory.quantity -= quantity
-
 
         if inventory.quantity == 0:
             inventory.is_available = False
 
-
         inventory.save()
-
 
         return inventory
 
@@ -42,15 +35,11 @@ class InventoryService:
             product=product
         )
 
-
         inventory.quantity += quantity
-
 
         inventory.is_available = True
 
-
         inventory.save()
-
 
         return inventory
 
