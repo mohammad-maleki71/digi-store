@@ -21,8 +21,6 @@ class OrderService:
 
         total_price = 0
 
-
-        # محاسبه مبلغ سبد
         for item in cart.items.all():
 
             total_price += (
@@ -30,12 +28,9 @@ class OrderService:
                 item.quantity
             )
 
-
         discount = 0
         coupon = None
 
-
-        # اعمال کوپن
         if coupon_code:
 
             result = CouponService.apply_coupon(
@@ -43,16 +38,12 @@ class OrderService:
                 total_price
             )
 
-
             coupon = result["coupon"]
 
             discount = result["discount"]
 
             total_price = result["final_price"]
 
-
-
-        # ساخت سفارش
         order = Order.objects.create(
 
             user=user,
@@ -67,9 +58,6 @@ class OrderService:
 
         )
 
-
-
-        # ساخت آیتم ها و کم کردن موجودی
         for item in cart.items.all():
 
 
@@ -80,7 +68,6 @@ class OrderService:
                 item.quantity
 
             )
-
 
             OrderItem.objects.create(
 
@@ -94,9 +81,6 @@ class OrderService:
 
             )
 
-
-
         cart.items.all().delete()
-
 
         return order

@@ -22,17 +22,13 @@ class CreateOrderAPIView(APIView):
             order = OrderService.create_order(
                 request.user
             )
-
-
         except ValueError as e:
-
             return Response(
                 {
                     "error": str(e)
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
         serializer = OrderSerializer(
             order
